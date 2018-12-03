@@ -2,12 +2,13 @@ package benchmark
 
 import (
 	"fmt"
-	"github.com/herlegs/KafkaPlay/benchmark/rate"
 	"time"
+
+	"github.com/herlegs/KafkaPlay/benchmark/rate"
 )
 
 type Event struct {
-	ID string
+	ID          string
 	ProduceTime time.Time
 }
 
@@ -17,15 +18,15 @@ func StartProducer(id string, qps float64, dataCh chan interface{}) {
 		if rateLimiter.Allow() {
 			//fmt.Printf("insert id:%v\n",id)
 			dataCh <- &Event{
-				ID: id,
+				ID:          id,
 				ProduceTime: time.Now(),
 			}
 		}
 	}
 }
 
-func StartConsumer(id string, dataCh chan interface{}, statsEnabled bool) {
-	fmt.Printf("consumer %v started\n",id)
+func StartConsumer(id string, dataCh chan interface{}, consumeTime time.Duration, statsEnabled bool) {
+	fmt.Printf("consumer %v started\n", id)
 	count := 0
 	lastTime := time.Now()
 	eventDelays := time.Duration(0)
@@ -35,12 +36,13 @@ func StartConsumer(id string, dataCh chan interface{}, statsEnabled bool) {
 		count++
 		timeDiff := time.Now().Sub(lastTime)
 		if statsEnabled && timeDiff.Nanoseconds() > (time.Second).Nanoseconds() {
-			fmt.Printf("[%v]average event delay in ns %v\n", id, float64(eventDelays.Nanoseconds())/float64(count))
-			fmt.Printf("[%v]average qps %v\n",event.ID, float64(count)/timeDiff.Seconds())
+			fmt.Printf("[%v]average event delay in ns %v\n", id, float64(eventDelays.Seconds())/float64(count))
+			fmt.Printf("[%v]average qps %v\n", event.ID, float64(count)/timeDiff.Seconds())
 			lastTime = time.Now()
 			eventDelays = time.Duration(0)
 			count = 0
 		}
+		time.Sleep(consumeTime)
 	}
 }
 
@@ -49,15 +51,15 @@ func WithoutMultiplex() {
 	//go StartConsumer("t1-p1", dataCh, true)
 	//go StartProducer("t1-p1", 100, dataCh)
 	//time.Sleep(time.Second*30)
-	dataCh, t1_p1_ch := make(chan interface{},1), make(chan interface{},1)
+	dataCh, t1_p1_ch := make(chan interface{}, 1), make(chan interface{}, 1)
 	go Multiplexer(dataCh, map[string]chan interface{}{
 		"t1-p1": t1_p1_ch,
 	})
 	go StartProducer("t1-p1", 100, dataCh)
 
-	go StartConsumer("t1-p1", t1_p1_ch, true)
+	go StartConsumer("t1-p1", t1_p1_ch, 0, true)
 
-	time.Sleep(time.Second*30)
+	time.Sleep(time.Second * 30)
 }
 
 func Multiplexer(dataCh chan interface{}, config map[string]chan interface{}) {
@@ -70,7 +72,7 @@ func Multiplexer(dataCh chan interface{}, config map[string]chan interface{}) {
 }
 
 func WithMultiplex() {
-	dataCh, t1_p1_ch, t2_p1_ch := make(chan interface{}), make(chan interface{}), make(chan interface{})
+	dataCh, t1_p1_ch, t2_p1_ch := make(chan interface{}), make(chan interface{}), make(chan interface{}, 1000)
 	go Multiplexer(dataCh, map[string]chan interface{}{
 		"t1-p1": t1_p1_ch,
 		"t2-p1": t2_p1_ch,
@@ -78,8 +80,8 @@ func WithMultiplex() {
 	go StartProducer("t1-p1", 100, dataCh)
 	go StartProducer("t2-p1", 1000000, dataCh)
 
-	go StartConsumer("t1-p1", t1_p1_ch, true)
-	go StartConsumer("t2-p1", t2_p1_ch, true)
+	go StartConsumer("t1-p1", t1_p1_ch, 0, true)
+	go StartConsumer("t2-p1", t2_p1_ch, time.Millisecond, false)
 
-	time.Sleep(time.Second*30)
+	time.Sleep(time.Second * 30)
 }
