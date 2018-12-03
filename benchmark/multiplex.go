@@ -36,7 +36,7 @@ func StartConsumer(id string, dataCh chan interface{}, consumeTime time.Duration
 		count++
 		timeDiff := time.Now().Sub(lastTime)
 		if statsEnabled && timeDiff.Nanoseconds() > (time.Second).Nanoseconds() {
-			fmt.Printf("[%v]average event delay in ns %v\n", id, float64(eventDelays.Seconds())/float64(count))
+			fmt.Printf("[%v]average event delay in ns %v\n", id, float64(eventDelays.Nanoseconds())/float64(count))
 			fmt.Printf("[%v]average qps %v\n", event.ID, float64(count)/timeDiff.Seconds())
 			lastTime = time.Now()
 			eventDelays = time.Duration(0)
@@ -47,19 +47,19 @@ func StartConsumer(id string, dataCh chan interface{}, consumeTime time.Duration
 }
 
 func WithoutMultiplex() {
-	//dataCh := make(chan interface{})
-	//go StartConsumer("t1-p1", dataCh, true)
-	//go StartProducer("t1-p1", 100, dataCh)
-	//time.Sleep(time.Second*30)
-	dataCh, t1_p1_ch := make(chan interface{}, 1), make(chan interface{}, 1)
-	go Multiplexer(dataCh, map[string]chan interface{}{
-		"t1-p1": t1_p1_ch,
-	})
+	dataCh := make(chan interface{})
+	go StartConsumer("t1-p1", dataCh, 0, true)
 	go StartProducer("t1-p1", 100, dataCh)
-
-	go StartConsumer("t1-p1", t1_p1_ch, 0, true)
-
 	time.Sleep(time.Second * 30)
+	//dataCh, t1_p1_ch := make(chan interface{}, 1), make(chan interface{}, 1)
+	//go Multiplexer(dataCh, map[string]chan interface{}{
+	//	"t1-p1": t1_p1_ch,
+	//})
+	//go StartProducer("t1-p1", 100, dataCh)
+	//
+	//go StartConsumer("t1-p1", t1_p1_ch, 0, true)
+	//
+	//time.Sleep(time.Second * 30)
 }
 
 func Multiplexer(dataCh chan interface{}, config map[string]chan interface{}) {
@@ -74,14 +74,14 @@ func Multiplexer(dataCh chan interface{}, config map[string]chan interface{}) {
 func WithMultiplex() {
 	dataCh, t1_p1_ch, t2_p1_ch := make(chan interface{}), make(chan interface{}), make(chan interface{}, 1000)
 	go Multiplexer(dataCh, map[string]chan interface{}{
-		"t1-p1": t1_p1_ch,
-		"t2-p1": t2_p1_ch,
+		"light": t1_p1_ch,
+		"heavy": t2_p1_ch,
 	})
-	go StartProducer("t1-p1", 100, dataCh)
-	go StartProducer("t2-p1", 1000000, dataCh)
+	go StartProducer("light", 100, dataCh)
+	go StartProducer("heavy", 1000000, dataCh)
 
-	go StartConsumer("t1-p1", t1_p1_ch, 0, true)
-	go StartConsumer("t2-p1", t2_p1_ch, time.Millisecond, false)
+	go StartConsumer("light", t1_p1_ch, 0, true)
+	go StartConsumer("heavy", t2_p1_ch, time.Microsecond, false)
 
 	time.Sleep(time.Second * 30)
 }
