@@ -1,0 +1,13 @@
+#Note: zookeeper sasl is not necessary, so zookeeper.properties and zookeeper_jaas.conf can be ignored
+
+###Steps for start kafka server in local:
+
+Assume goreman is installed
+0. go get github.com/mattn/goreman
+
+1. Move kafka_server_jaas.conf to $KAFKA_DIR/ (Kafka directory)
+2. Move server.X.properties to $KAFKA_DIR/config/
+3. Move Procfile to $KAFKA_DIR/
+4. Run `goreman start` under $KAFKA_DIR/
+
+Or forget what you read, just set $KAFKA_DIR variable and run ass kicking run.sh (`bash run.sh`)
