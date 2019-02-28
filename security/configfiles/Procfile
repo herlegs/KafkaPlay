@@ -1,0 +1,7 @@
+zoo: env KAFKA_OPTS="-Djava.security.auth.login.config=/Users/yuguang.xiao/Applications/kafka_2.10-0.10.2.0/zookeeper_jaas.conf" bin/zookeeper-server-start.sh config/zookeeper.properties
+
+broker1: env KAFKA_OPTS="-Djava.security.auth.login.config=/Users/yuguang.xiao/Applications/kafka_2.10-0.10.2.0/kafka_server_jaas.conf" bin/kafka-server-start.sh config/server.1.properties
+
+broker2: env KAFKA_OPTS="-Djava.security.auth.login.config=/Users/yuguang.xiao/Applications/kafka_2.10-0.10.2.0/kafka_server_jaas.conf" bin/kafka-server-start.sh config/server.2.properties
+
+broker3: env KAFKA_OPTS="-Djava.security.auth.login.config=/Users/yuguang.xiao/Applications/kafka_2.10-0.10.2.0/kafka_server_jaas.conf" bin/kafka-server-start.sh config/server.3.properties

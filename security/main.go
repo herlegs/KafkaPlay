@@ -11,7 +11,10 @@ import (
 )
 
 const (
-	topicName = "xiao"
+	topicName = "test"
+
+	UserName = "alice"
+	Password = "alicepw"
 )
 
 func main() {
@@ -19,7 +22,11 @@ func main() {
 	producerCfg := sarama.NewConfig()
 	//producerCfg.Metadata.RefreshFrequency = time.Second * 20
 	producerCfg.Producer.Return.Successes = true
-	producer, err := sarama.NewSyncProducer(constants.KafkaCluster, producerCfg)
+	producerCfg.Net.SASL.Enable = true
+	producerCfg.Net.SASL.User = UserName
+	producerCfg.Net.SASL.Password = Password
+
+	producer, err := sarama.NewSyncProducer(constants.KafkaClusterSecure, producerCfg)
 	if err != nil {
 		fmt.Printf("error creating producer: %v\n", err)
 		return
@@ -50,7 +57,10 @@ func main() {
 func Worker(id string) {
 	consumerCfg := cluster.NewConfig()
 	consumerCfg.Metadata.RefreshFrequency = time.Second * 10
-	consumer, err := cluster.NewConsumer(constants.KafkaCluster, "tGroup", []string{topicName}, consumerCfg)
+	consumerCfg.Net.SASL.Enable = true
+	consumerCfg.Net.SASL.User = UserName
+	consumerCfg.Net.SASL.Password = Password
+	consumer, err := cluster.NewConsumer(constants.KafkaClusterSecure, "tGroup", []string{topicName}, consumerCfg)
 	if err != nil {
 		fmt.Printf("error creating consumer: %v\n", err)
 		return
