@@ -24,6 +24,34 @@ func main() {
 	go Worker("B")
 	go Worker("C")
 
+	a := [25]*time.Time{}
+
+	//producerCfg := sarama.NewConfig()
+	////producerCfg.Metadata.RefreshFrequency = time.Second * 20
+	//producerCfg.Producer.Return.Successes = true
+	//producer, err := sarama.NewSyncProducer(constants.KafkaCluster, producerCfg)
+	//if err != nil {
+	//	fmt.Printf("error creating producer: %v\n", err)
+	//	return
+	//}
+	//
+	//i := 0
+	//for {
+	//	val := fmt.Sprintf("val%v", i)
+	//	msg := &sarama.ProducerMessage{
+	//		Topic: topicName,
+	//		Key:   sarama.StringEncoder(fmt.Sprintf("key%v", i)),
+	//		Value: sarama.StringEncoder(val),
+	//	}
+	//	partition, _, err := producer.SendMessage(msg)
+	//	if err != nil {
+	//		fmt.Printf("err send msg: %v\n", err)
+	//	}
+	//	fmt.Printf("sent msg %v to partition %v\n", val, partition)
+	//	i++
+	//	time.Sleep(time.Second * 3)
+	//}
+
 	<-time.After(time.Minute * 10)
 }
 
