@@ -10,10 +10,14 @@ import (
 
 var globalCount uint32
 
+/*
+change qps and routine numbers to see difference
+*/
 const (
-	qps = 3000
+	// qps is total qps for all workers
+	qps = 100
 
-	workerNum = 20
+	workerNum = 200
 )
 
 // main
