@@ -15,9 +15,9 @@ change qps and routine numbers to see difference
 */
 const (
 	// qps is total qps for all workers
-	qps = 100
+	qps = 10000
 
-	workerNum = 200
+	workerNum = 20
 )
 
 // main
